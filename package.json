@@ -1,0 +1,17 @@
+{
+  "name": "cash-management",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "node scripts/setup-env.js && npm run api:build",
+    "start": "npm run api:start",
+    "deploy": "node scripts/deploy.js",
+    "setup-env": "node scripts/setup-env.js",
+    "api:dev": "npm run start:dev --workspace=packages/api",
+    "api:build": "npm run build --workspace=packages/api",
+    "api:start": "npm run start:prod --workspace=packages/api"
+  }
+}
