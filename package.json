@@ -12,6 +12,9 @@
     "setup-env": "node scripts/setup-env.js",
     "api:dev": "npm run start:dev --workspace=packages/api",
     "api:build": "npm run build --workspace=packages/api",
-    "api:start": "npm run start:prod --workspace=packages/api"
+    "api:start": "npm run start:prod --workspace=packages/api",
+    "client:dev": "npm run dev --workspace=packages/client",
+    "client:build": "npm run build --workspace=packages/client",
+    "client:preview": "npm run preview --workspace=packages/client"
   }
 }
