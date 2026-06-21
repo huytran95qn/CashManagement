@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { GetDatabasesUseCase } from '../../application/notion/use-cases/get-databases.use-case'
-import { useNotionRepository } from '../providers/notion.provider'
+import { lastValueFrom } from 'rxjs';
+import { DatabaseRecordsUseCase } from '../../application/database-records.use-case';
+import { useRefInstance } from './use-ref-instance';
 
 export function useDatabases() {
-  const repository = useNotionRepository()
-  return useQuery({
-    queryKey: ['notion', 'databases'],
-    queryFn: () => new GetDatabasesUseCase(repository).execute(),
-  })
+	const useCase = useRefInstance(DatabaseRecordsUseCase);
+
+	return useQuery({
+		queryKey: ['notion', 'databases'],
+		queryFn: () => lastValueFrom(useCase.getDatabases()),
+	})
 }

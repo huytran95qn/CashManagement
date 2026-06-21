@@ -7,6 +7,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {

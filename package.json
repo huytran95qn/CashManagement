@@ -16,5 +16,8 @@
     "client:dev": "npm run dev --workspace=packages/client",
     "client:build": "npm run build --workspace=packages/client",
     "client:preview": "npm run preview --workspace=packages/client"
+  },
+  "dependencies": {
+    "inversify": "^8.1.1"
   }
 }
