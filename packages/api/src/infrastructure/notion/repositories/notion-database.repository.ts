@@ -8,6 +8,8 @@ import { QueryOptions, PaginatedResult } from '@Domain/shared/pagination.types';
 import { NotionClientProvider } from '@Infrastructure/notion/providers/notion-client.provider';
 import { NotionDatabaseMapper } from '@Infrastructure/notion/mappers/notion-database.mapper';
 import { NotionPageMapper } from '@Infrastructure/notion/mappers/notion-page.mapper';
+import { EMPTY, Observable, defer, from, of, throwError } from 'rxjs';
+import { catchError, expand, filter, map, mergeMap, toArray } from 'rxjs/operators';
 
 /**
  * Concrete implementation of INotionDatabaseRepository.
@@ -15,87 +17,107 @@ import { NotionPageMapper } from '@Infrastructure/notion/mappers/notion-page.map
  */
 @Injectable()
 export class NotionDatabaseRepository implements INotionDatabaseRepository {
-  constructor(private readonly notionClientProvider: NotionClientProvider) {}
+	constructor(private readonly notionClientProvider: NotionClientProvider) {}
 
-  async findAll(): Promise<NotionDatabase[]> {
-    const results: NotionDatabase[] = [];
-    let cursor: string | undefined = undefined;
+	public findAll(): Observable<NotionDatabase[]> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.search({
+					filter: { value: 'database', property: 'object' },
+					page_size: 100,
+				}),
+			),
+		).pipe(
+			expand((response) => {
+				if (!response.has_more || !response.next_cursor) {
+					return EMPTY;
+				}
 
-    do {
-      const response = await this.notionClientProvider.client.search({
-        filter: { value: 'database', property: 'object' },
-        page_size: 100,
-        ...(cursor ? { start_cursor: cursor } : {}),
-      });
+				return from(
+					this.notionClientProvider.client.search({
+						filter: { value: 'database', property: 'object' },
+						page_size: 100,
+						start_cursor: response.next_cursor,
+					}),
+				);
+			}),
+			mergeMap((response) => from(response.results)),
+			filter(isFullDatabase),
+			map((database) => NotionDatabaseMapper.toDomain(database)),
+			toArray(),
+		);
+	}
 
-      for (const result of response.results) {
-        if (isFullDatabase(result)) {
-          results.push(NotionDatabaseMapper.toDomain(result));
-        }
-      }
+	public findById(id: string): Observable<NotionDatabase | null> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.databases.retrieve({
+					database_id: id,
+				}),
+			),
+		).pipe(
+			map((response) => {
+				if (!isFullDatabase(response)) {
+					return null;
+				}
 
-      cursor = response.has_more ? (response.next_cursor ?? undefined) : undefined;
-    } while (cursor);
+				return NotionDatabaseMapper.toDomain(response);
+			}),
+			catchError((error: any) => {
+				if (error?.code === 'object_not_found') {
+					return of(null);
+				}
 
-    return results;
-  }
+				return throwError(() => error);
+			}),
+		);
+	}
 
-  async findById(id: string): Promise<NotionDatabase | null> {
-    try {
-      const response = await this.notionClientProvider.client.databases.retrieve({
-        database_id: id,
-      });
+	public findDetailById(id: string): Observable<NotionDatabaseDetail | null> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.databases.retrieve({
+					database_id: id,
+				}),
+			),
+		).pipe(
+			map((response) => {
+				if (!isFullDatabase(response)) {
+					return null;
+				}
 
-      if (!isFullDatabase(response)) {
-        return null;
-      }
+				return NotionDatabaseMapper.toDetailDomain(response);
+			}),
+			catchError((error: any) => {
+				if (error?.code === 'object_not_found') {
+					return of(null);
+				}
 
-      return NotionDatabaseMapper.toDomain(response);
-    } catch (error: any) {
-      if (error?.code === 'object_not_found') {
-        return null;
-      }
-      throw error;
-    }
-  }
+				return throwError(() => error);
+			}),
+		);
+	}
 
-  async findDetailById(id: string): Promise<NotionDatabaseDetail | null> {
-    try {
-      const response = await this.notionClientProvider.client.databases.retrieve({
-        database_id: id,
-      });
-
-      if (!isFullDatabase(response)) {
-        return null;
-      }
-
-      return NotionDatabaseMapper.toDetailDomain(response);
-    } catch (error: any) {
-      if (error?.code === 'object_not_found') {
-        return null;
-      }
-      throw error;
-    }
-  }
-
-  async queryRecords(
-    databaseId: string,
-    options?: QueryOptions,
-  ): Promise<PaginatedResult<NotionPage>> {
-    const response = await this.notionClientProvider.client.databases.query({
-      database_id: databaseId,
-      page_size: options?.pageSize ?? 20,
-      ...(options?.startCursor ? { start_cursor: options.startCursor } : {}),
-    });
-
-    const results = response.results
-      .filter(isFullPage)
-      .map((page) => NotionPageMapper.toDomain(page));
-
-    return {
-      results,
-      hasMore: response.has_more,
-      nextCursor: response.next_cursor ?? null,
-    };
-  }
+	public queryRecords(
+		databaseId: string,
+		options?: QueryOptions,
+	): Observable<PaginatedResult<NotionPage>> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.databases.query({
+					database_id: databaseId,
+					page_size: options?.pageSize ?? 20,
+					...(options?.startCursor ? { start_cursor: options.startCursor } : {}),
+				}),
+			),
+		).pipe(
+			map((response) => ({
+				results: response.results
+					.filter(isFullPage)
+					.map((page) => NotionPageMapper.toDomain(page)),
+				hasMore: response.has_more,
+				nextCursor: response.next_cursor ?? null,
+			})),
+		);
+	}
 }

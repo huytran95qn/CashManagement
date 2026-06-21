@@ -1,10 +1,10 @@
 export interface QueryOptions {
-  pageSize?: number;
-  startCursor?: string;
+	pageSize?: number;
+	startCursor?: string;
 }
 
 export interface PaginatedResult<T> {
-  results: T[];
-  hasMore: boolean;
-  nextCursor: string | null;
+	results: T[];
+	hasMore: boolean;
+	nextCursor: string | null;
 }

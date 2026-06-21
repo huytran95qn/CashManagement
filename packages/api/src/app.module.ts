@@ -6,9 +6,9 @@ import { NotionModule } from './modules/notion/notion.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: '.env'
     }),
-    NotionModule,
+    NotionModule
   ],
 })
 export class AppModule {}

@@ -2,6 +2,7 @@ import { NotionDatabase } from '../entities/notion-database.entity';
 import { NotionDatabaseDetail } from '../entities/notion-database-detail.entity';
 import { NotionPage } from '../entities/notion-page.entity';
 import { QueryOptions, PaginatedResult } from '../../shared/pagination.types';
+import { Observable } from 'rxjs';
 
 /**
  * Repository contract for Notion databases.
@@ -13,19 +14,19 @@ export interface INotionDatabaseRepository {
   /**
    * Returns all databases accessible by the configured integration token.
    */
-  findAll(): Promise<NotionDatabase[]>;
+  findAll(): Observable<NotionDatabase[]>;
 
   /**
    * Returns a single database by its Notion ID.
    * Resolves to null if the database is not found or not accessible.
    */
-  findById(id: string): Promise<NotionDatabase | null>;
+  findById(id: string): Observable<NotionDatabase | null>;
 
   /**
    * Returns full database detail including all property schemas.
    * Resolves to null if the database is not found or not accessible.
    */
-  findDetailById(id: string): Promise<NotionDatabaseDetail | null>;
+  findDetailById(id: string): Observable<NotionDatabaseDetail | null>;
 
   /**
    * Queries records (pages) inside a database. Supports cursor-based pagination.
@@ -33,5 +34,5 @@ export interface INotionDatabaseRepository {
   queryRecords(
     databaseId: string,
     options?: QueryOptions,
-  ): Promise<PaginatedResult<NotionPage>>;
+  ): Observable<PaginatedResult<NotionPage>>;
 }

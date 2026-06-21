@@ -1,23 +1,16 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { GetNotionDatabasesUseCase } from '@Application/notion/use-cases/get-notion-databases.use-case';
-import { GetNotionDatabaseByIdUseCase } from '@Application/notion/use-cases/get-notion-database-by-id.use-case';
-import { GetNotionDatabaseSchemaUseCase } from '@Application/notion/use-cases/get-notion-database-schema.use-case';
-import { QueryNotionDatabaseRecordsUseCase } from '@Application/notion/use-cases/query-notion-database-records.use-case';
+import { NotionDatabaseUseCase } from '@Application/notion/use-cases/notion-database.use-case';
 import { NotionDatabaseDto } from '@Application/notion/dtos/notion-database.dto';
 import { NotionDatabaseDetailDto } from '@Application/notion/dtos/notion-database-detail.dto';
 import { NotionPageListDto } from '@Application/notion/dtos/notion-page.dto';
 import { QueryDatabaseRecordsDto } from '@Application/notion/dtos/query-database-records.dto';
+import { Observable } from 'rxjs';
 
 @ApiTags('Notion')
 @Controller('notion/databases')
 export class NotionDatabaseController {
-  constructor(
-    private readonly getNotionDatabasesUseCase: GetNotionDatabasesUseCase,
-    private readonly getNotionDatabaseByIdUseCase: GetNotionDatabaseByIdUseCase,
-    private readonly getNotionDatabaseSchemaUseCase: GetNotionDatabaseSchemaUseCase,
-    private readonly queryNotionDatabaseRecordsUseCase: QueryNotionDatabaseRecordsUseCase,
-  ) {}
+  constructor(private readonly notionDatabaseUseCase: NotionDatabaseUseCase) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -31,8 +24,8 @@ export class NotionDatabaseController {
     description: 'List of accessible Notion databases',
     type: [NotionDatabaseDto],
   })
-  async getDatabases(): Promise<NotionDatabaseDto[]> {
-    return this.getNotionDatabasesUseCase.execute();
+  public getDatabases(): Observable<NotionDatabaseDto[]> {
+    return this.notionDatabaseUseCase.getDatabases();
   }
 
   @Get(':id')
@@ -48,8 +41,8 @@ export class NotionDatabaseController {
     type: NotionDatabaseDto,
   })
   @ApiResponse({ status: 404, description: 'Database not found' })
-  async getDatabaseById(@Param('id') id: string): Promise<NotionDatabaseDto> {
-    return this.getNotionDatabaseByIdUseCase.execute(id);
+  public getDatabaseById(@Param('id') id: string): Observable<NotionDatabaseDto> {
+    return this.notionDatabaseUseCase.getDatabaseById(id);
   }
 
   @Get(':id/schema')
@@ -65,8 +58,8 @@ export class NotionDatabaseController {
     type: NotionDatabaseDetailDto,
   })
   @ApiResponse({ status: 404, description: 'Database not found' })
-  async getDatabaseSchema(@Param('id') id: string): Promise<NotionDatabaseDetailDto> {
-    return this.getNotionDatabaseSchemaUseCase.execute(id);
+  public getDatabaseSchema(@Param('id') id: string): Observable<NotionDatabaseDetailDto> {
+    return this.notionDatabaseUseCase.getDatabaseSchema(id);
   }
 
   @Get(':id/records')
@@ -86,10 +79,10 @@ export class NotionDatabaseController {
     type: NotionPageListDto,
   })
   @ApiResponse({ status: 404, description: 'Database not found' })
-  async getDatabaseRecords(
+  public getDatabaseRecords(
     @Param('id') id: string,
     @Query() query: QueryDatabaseRecordsDto,
-  ): Promise<NotionPageListDto> {
-    return this.queryNotionDatabaseRecordsUseCase.execute(id, query);
+  ): Observable<NotionPageListDto> {
+    return this.notionDatabaseUseCase.queryDatabaseRecords(id, query);
   }
 }
