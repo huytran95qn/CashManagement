@@ -38,11 +38,11 @@ export class DatabaseRecordsUseCase {
 		return this.repository.createRecord(databaseId, payload)
 	}
 
-	public updateRecord(recordId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
-		return this.repository.updateRecord(recordId, payload)
+	public updateRecord(databaseId: string, recordId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
+		return this.repository.updateRecord(databaseId, recordId, payload)
 	}
 
-	public deleteRecord(recordId: string): Observable<void> {
-		return this.repository.deleteRecord(recordId)
+	public deleteRecord(databaseId: string, recordId: string): Observable<void> {
+		return this.repository.deleteRecord(databaseId, recordId)
 	}
 }

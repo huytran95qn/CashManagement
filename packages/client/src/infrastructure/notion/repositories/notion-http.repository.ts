@@ -1,6 +1,6 @@
 import { map, Observable } from 'rxjs'
 import type { NotionDatabase, NotionDatabaseDetail } from '../../../domain/notion/entities/notion-database.entity'
-import type { NotionPageList } from '../../../domain/notion/entities/notion-page.entity'
+import type { NotionPage, NotionPageList } from '../../../domain/notion/entities/notion-page.entity'
 import type {
 	INotionHttpRepository,
 	QueryRecordsParams,
@@ -60,13 +60,13 @@ export class NotionHttpRepository implements INotionHttpRepository {
 			.pipe(map(dto => NotionPageMapper.toDomain(dto)));
 	}
 
-	public updateRecord(recordId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
+	public updateRecord(databaseId: string, recordId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
 		return this.httpRequest
-			.patch<ApiNotionPageDto>(`${this.base}/records/${recordId}`, payload as ApiUpsertNotionRecordDto)
+			.patch<ApiNotionPageDto>(`${this.base}/${databaseId}/records/${recordId}`, payload as ApiUpsertNotionRecordDto)
 			.pipe(map(dto => NotionPageMapper.toDomain(dto)));
 	}
 
-	public deleteRecord(recordId: string): Observable<void> {
-		return this.httpRequest.delete(`${this.base}/records/${recordId}`);
+	public deleteRecord(databaseId: string, recordId: string): Observable<void> {
+		return this.httpRequest.delete(`${this.base}/${databaseId}/records/${recordId}`);
 	}
 }

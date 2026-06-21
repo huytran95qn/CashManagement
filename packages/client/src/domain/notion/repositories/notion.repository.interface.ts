@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs'
 import type { NotionDatabase, NotionDatabaseDetail } from '../entities/notion-database.entity'
-import type { NotionPageList } from '../entities/notion-page.entity'
+import type { NotionPage, NotionPageList } from '../entities/notion-page.entity'
 
 export interface QueryRecordsParams {
 	pageSize?: number
@@ -17,6 +17,6 @@ export interface INotionHttpRepository {
 	getDatabaseSchema(id: string): Observable<NotionDatabaseDetail>
 	queryRecords(id: string, params?: QueryRecordsParams): Observable<NotionPageList>
 	createRecord(databaseId: string, payload: UpsertRecordPayload): Observable<NotionPage>
-	updateRecord(recordId: string, payload: UpsertRecordPayload): Observable<NotionPage>
-	deleteRecord(recordId: string): Observable<void>
+	updateRecord(databaseId: string, recordId: string, payload: UpsertRecordPayload): Observable<NotionPage>
+	deleteRecord(databaseId: string, recordId: string): Observable<void>
 }

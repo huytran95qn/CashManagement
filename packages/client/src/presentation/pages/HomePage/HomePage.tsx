@@ -31,7 +31,9 @@ export function HomePage() {
 
 	return (
 		<Layout>
-			<HomePageHeader onAddDatabase={() => setModalMode({ type: 'add' })} />
+			<HomePageHeader
+				onAddDatabase={() => setModalMode({ type: 'add' })}
+			/>
 
 			{isLoading && <Spinner className="py-16" />}
 
@@ -53,7 +55,11 @@ export function HomePage() {
 
 			{/* Modal */}
 			{modalMode && (
-				<DatabaseFormModal mode={modalMode} onClose={closeModal} onSuccess={onSuccess} />
+				<DatabaseFormModal
+					mode={modalMode}
+					onClose={closeModal}
+					onSuccess={onSuccess}
+				/>
 			)}
 		</Layout>
 	)
