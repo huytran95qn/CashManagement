@@ -120,4 +120,63 @@ export class NotionDatabaseRepository implements INotionDatabaseRepository {
 			})),
 		);
 	}
+
+	public createRecord(
+		databaseId: string,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		properties: Record<string, any>,
+	): Observable<NotionPage> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.pages.create({
+					parent: { type: 'database_id', database_id: databaseId },
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					properties: properties as any,
+				}),
+			),
+		).pipe(
+			map((response) => {
+				if (!isFullPage(response)) {
+					throw new Error('Unexpected partial page response from Notion API');
+				}
+
+				return NotionPageMapper.toDomain(response);
+			}),
+		);
+	}
+
+	public updateRecord(
+		pageId: string,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		properties: Record<string, any>,
+	): Observable<NotionPage> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.pages.update({
+					page_id: pageId,
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					properties: properties as any,
+				}),
+			),
+		).pipe(
+			map((response) => {
+				if (!isFullPage(response)) {
+					throw new Error('Unexpected partial page response from Notion API');
+				}
+
+				return NotionPageMapper.toDomain(response);
+			}),
+		);
+	}
+
+	public deleteRecord(pageId: string): Observable<void> {
+		return defer(() =>
+			from(
+				this.notionClientProvider.client.pages.update({
+					page_id: pageId,
+					archived: true,
+				}),
+			),
+		).pipe(map(() => void 0));
+	}
 }

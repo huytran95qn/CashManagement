@@ -6,7 +6,9 @@ import {
 import { NotionDatabaseDto } from '@Application/notion/dtos/notion-database.dto';
 import { NotionDatabaseDetailDto } from '@Application/notion/dtos/notion-database-detail.dto';
 import { QueryDatabaseRecordsDto } from '@Application/notion/dtos/query-database-records.dto';
-import { NotionPageListDto } from '@Application/notion/dtos/notion-page.dto';
+import { NotionPageDto, NotionPageListDto } from '@Application/notion/dtos/notion-page.dto';
+import { CreateNotionRowDto, UpdateNotionRowDto } from '@Application/notion/dtos/notion-row-mutations.dto';
+import { NotionPage } from '@Domain/notion/entities/notion-page.entity';
 import { Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
@@ -87,6 +89,25 @@ export class NotionDatabaseUseCase {
 		);
 	}
 
+	public createRow(databaseId: string, dto: CreateNotionRowDto): Observable<NotionPageDto> {
+		return this.ensureDatabaseExists(databaseId).pipe(
+			switchMap(() =>
+				this.notionDatabaseRepository.createRecord(databaseId, dto.properties),
+			),
+			map((page) => this.toPageDto(page)),
+		);
+	}
+
+	public updateRow(pageId: string, dto: UpdateNotionRowDto): Observable<NotionPageDto> {
+		return this.notionDatabaseRepository
+			.updateRecord(pageId, dto.properties)
+			.pipe(map((page) => this.toPageDto(page)));
+	}
+
+	public deleteRow(pageId: string): Observable<void> {
+		return this.notionDatabaseRepository.deleteRecord(pageId);
+	}
+
 	private ensureDatabaseExists(databaseId: string): Observable<void> {
 		return this.notionDatabaseRepository.findById(databaseId).pipe(
 			map((exists) => {
@@ -95,6 +116,20 @@ export class NotionDatabaseUseCase {
 				}
 			}),
 		);
+	}
+
+	private toPageDto(page: NotionPage): NotionPageDto {
+		return {
+			id: page.id,
+			url: page.url,
+			createdTime: page.createdTime.toISOString(),
+			lastEditedTime: page.lastEditedTime.toISOString(),
+			properties: page.properties.map((p) => ({
+				name: p.name,
+				type: p.type,
+				value: p.value,
+			})),
+		};
 	}
 
 	protected toDatabaseDto(db: {

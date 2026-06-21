@@ -2,10 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class NotionPagePropertyDto {
 	@ApiProperty({ example: 'Name' })
-	name: string;
+	name!: string;
 
 	@ApiProperty({ example: 'title' })
-	type: string;
+	type!: string;
 
 	@ApiProperty({
 		description: 'Extracted vadlue — shape depends on property type',
@@ -17,28 +17,28 @@ export class NotionPagePropertyDto {
 
 export class NotionPageDto {
 	@ApiProperty({ example: 'abc-123' })
-	id: string;
+	id!: string;
 
 	@ApiProperty({ example: 'https://notion.so/...' })
-	url: string;
+	url!: string;
 
 	@ApiProperty()
-	createdTime: string;
+	createdTime!: string;
 
 	@ApiProperty()
-	lastEditedTime: string;
+	lastEditedTime!: string;
 
 	@ApiProperty({ type: [NotionPagePropertyDto] })
-	properties: NotionPagePropertyDto[];
+	properties!: NotionPagePropertyDto[];
 }
 
 export class NotionPageListDto {
 	@ApiProperty({ type: [NotionPageDto] })
-	results: NotionPageDto[];
+	results!: NotionPageDto[];
 
 	@ApiProperty({ example: false })
-	hasMore: boolean;
+	hasMore!: boolean;
 
 	@ApiProperty({ example: null, nullable: true })
-	nextCursor: string | null;
+	nextCursor!: string | null;
 }

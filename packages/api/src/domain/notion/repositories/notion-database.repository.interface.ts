@@ -35,4 +35,27 @@ export interface INotionDatabaseRepository {
     databaseId: string,
     options?: QueryOptions,
   ): Observable<PaginatedResult<NotionPage>>;
+
+  /**
+   * Creates a new record (page) inside the specified database.
+   */
+  createRecord(
+    databaseId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    properties: Record<string, any>,
+  ): Observable<NotionPage>;
+
+  /**
+   * Updates an existing record (page) by its page ID.
+   */
+  updateRecord(
+    pageId: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    properties: Record<string, any>,
+  ): Observable<NotionPage>;
+
+  /**
+   * Archives (soft-deletes) a record (page) by its page ID.
+   */
+  deleteRecord(pageId: string): Observable<void>;
 }

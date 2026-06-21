@@ -6,14 +6,14 @@ import { NotionClientProvider } from '@Infrastructure/notion/providers/notion-cl
 import { NOTION_DATABASE_REPOSITORY } from '@Domain/notion/repositories/notion-database.repository.interface';
 
 @Module({
-  controllers: [NotionDatabaseController],
-  providers: [
-    NotionClientProvider,
-    {
-      provide: NOTION_DATABASE_REPOSITORY,
-      useClass: NotionDatabaseRepository
-    },
-    NotionDatabaseUseCase
-  ],
+	controllers: [NotionDatabaseController],
+	providers: [
+		NotionClientProvider,
+		{
+			provide: NOTION_DATABASE_REPOSITORY,
+			useClass: NotionDatabaseRepository
+		},
+		NotionDatabaseUseCase
+	],
 })
-export class NotionModule {}
+export class NotionModule { }
