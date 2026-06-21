@@ -5,9 +5,13 @@ import { PropertyValue } from './PropertyValue'
 interface RecordsTableProps {
   columns: NotionDatabaseProperty[]
   records: NotionPage[]
+  onEditRecord?: (record: NotionPage) => void
+  onRemoveRecord?: (record: NotionPage) => void
 }
 
-export function RecordsTable({ columns, records }: RecordsTableProps) {
+export function RecordsTable({ columns, records, onEditRecord, onRemoveRecord }: RecordsTableProps) {
+  const showActions = !!onEditRecord || !!onRemoveRecord
+
   if (records.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-slate-200 py-12 text-center text-slate-400">
@@ -27,6 +31,7 @@ export function RecordsTable({ columns, records }: RecordsTableProps) {
                 <span className="ml-1 font-normal normal-case text-slate-300">({col.type})</span>
               </th>
             ))}
+            {showActions && <th className="whitespace-nowrap px-4 py-3 text-right">Actions</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -40,6 +45,30 @@ export function RecordsTable({ columns, records }: RecordsTableProps) {
                   </td>
                 )
               })}
+              {showActions && (
+                <td className="whitespace-nowrap px-4 py-3 text-right">
+                  <div className="flex justify-end gap-2">
+                    {onEditRecord && (
+                      <button
+                        type="button"
+                        onClick={() => onEditRecord(page)}
+                        className="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {onRemoveRecord && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveRecord(page)}
+                        className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

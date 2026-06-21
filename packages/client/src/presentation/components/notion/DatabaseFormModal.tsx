@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { lastValueFrom } from 'rxjs'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { DatabaseRecordsUseCase } from '../../../application/database-records.use-case'
 import type { NotionDatabase } from '../../../domain/notion/entities/notion-database.entity'
 import type { DatabasePreference } from '../../../domain/database-preference/entities/database-preference.entity'
 import { useDatabasePreferences } from '../../hooks/use-database-preferences'
+import { useRefInstance } from '../../hooks/use-ref-instance'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -27,8 +30,8 @@ const TITLES: Record<FormMode['type'], string> = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function DatabaseFormModal({ mode, onClose, onSuccess }: Props) {
-  const notionRepo = useNotionRepository()
-  const { save, remove } = useDatabasePreferences()
+  const recordsUseCase = useRefInstance(DatabaseRecordsUseCase)
+  const { preferences, save, remove } = useDatabasePreferences()
 
   const [databaseId, setDatabaseId] = useState('')
   const [customTitle, setCustomTitle] = useState(
@@ -63,8 +66,14 @@ export function DatabaseFormModal({ mode, onClose, onSuccess }: Props) {
       if (mode.type === 'add') {
         const id = databaseId.trim()
         if (!id) throw new Error('Database ID is required.')
+
+        const existing = preferences.find((preference) => preference.id === id)
+        if (existing && !existing.hidden) {
+          throw new Error('This database is already on your dashboard.')
+        }
+
         // Verify exists in Notion
-        await new GetDatabaseByIdUseCase(notionRepo).execute(id)
+        await lastValueFrom(recordsUseCase.getDatabaseById(id))
         save({ id, customTitle: customTitle.trim() || undefined, hidden: false })
         onSuccess()
       } else if (mode.type === 'edit') {
@@ -89,7 +98,12 @@ export function DatabaseFormModal({ mode, onClose, onSuccess }: Props) {
 
   const handleRestore = () => {
     if (mode.type !== 'delete') return
-    remove(mode.database.id)
+    const existing = preferences.find((preference) => preference.id === mode.database.id)
+    if (existing) {
+      save({ ...existing, hidden: false })
+    } else {
+      remove(mode.database.id)
+    }
     onSuccess()
   }
 

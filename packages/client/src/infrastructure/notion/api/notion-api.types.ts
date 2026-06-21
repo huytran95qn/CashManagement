@@ -37,3 +37,7 @@ export interface ApiNotionPageListDto {
   hasMore: boolean
   nextCursor: string | null
 }
+
+export interface ApiUpsertNotionRecordDto {
+  properties: Record<string, unknown>
+}

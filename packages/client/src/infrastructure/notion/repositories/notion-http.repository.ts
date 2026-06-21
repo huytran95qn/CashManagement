@@ -4,11 +4,14 @@ import type { NotionPageList } from '../../../domain/notion/entities/notion-page
 import type {
 	INotionHttpRepository,
 	QueryRecordsParams,
+	UpsertRecordPayload,
 } from '../../../domain/notion/repositories/notion.repository.interface'
 import type {
 	ApiNotionDatabaseDetailDto,
 	ApiNotionDatabaseDto,
+	ApiNotionPageDto,
 	ApiNotionPageListDto,
+	ApiUpsertNotionRecordDto,
 } from '../api/notion-api.types'
 import { NotionDatabaseMapper } from '../mappers/notion-database.mapper'
 import { NotionPageMapper } from '../mappers/notion-page.mapper'
@@ -49,5 +52,21 @@ export class NotionHttpRepository implements INotionHttpRepository {
 		return this.httpRequest.get<ApiNotionPageListDto>(url.pathname + url.search).pipe(
 			map(dto => NotionPageMapper.toPageListDomain(dto))
 		);
+	}
+
+	public createRecord(databaseId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
+		return this.httpRequest
+			.post<ApiNotionPageDto>(`${this.base}/${databaseId}/records`, payload as ApiUpsertNotionRecordDto)
+			.pipe(map(dto => NotionPageMapper.toDomain(dto)));
+	}
+
+	public updateRecord(recordId: string, payload: UpsertRecordPayload): Observable<NotionPage> {
+		return this.httpRequest
+			.patch<ApiNotionPageDto>(`${this.base}/records/${recordId}`, payload as ApiUpsertNotionRecordDto)
+			.pipe(map(dto => NotionPageMapper.toDomain(dto)));
+	}
+
+	public deleteRecord(recordId: string): Observable<void> {
+		return this.httpRequest.delete(`${this.base}/records/${recordId}`);
 	}
 }

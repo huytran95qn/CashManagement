@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HomePage } from './presentation/pages/HomePage'
-import { DatabasePage } from './presentation/pages/DatabasePage'
+import { HomePage } from './presentation/pages/HomePage/HomePage'
+import { DatabasePage } from './presentation/pages/DatabsePage/DatabasePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
